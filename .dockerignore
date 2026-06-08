@@ -1,0 +1,13 @@
+.venv
+.env
+.git
+.idea
+__pycache__
+voice_files
+hf_cache
+Dockerfile
+docker-compose.yml
+.gitignore
+.dockerignoreqwen
+.env.example
+allowed_user.example.json

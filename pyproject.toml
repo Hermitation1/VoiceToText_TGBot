@@ -1,0 +1,40 @@
+[project]
+name = "voicetotext-tgbot"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "aiogram>=3.27.0",
+    "aiohttp-socks>=0.11.0",
+    "faster-whisper>=1.2.1",
+    "ffmpeg-python>=0.2.0",
+    "httpx[socks]>=0.28.1",
+    "nvidia-cublas-cu12>=12.9.2.10",
+    "nvidia-cuda-runtime-cu12>=12.9.79",
+    "nvidia-cudnn-cu12>=9.20.0.48",
+    "pydantic-settings>=2.13.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "mypy>=2.1.0",
+    "ruff>=0.15.16",
+]
+
+[tool.ruff]
+lint.select = ["E", "F", "I", "N", "UP", "B", "SIM", "T20"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+disable_error_code = [
+    "union-attr",
+    "no-untyped-def",
+    "no-untyped-call",
+    "override",
+    "import-untyped",
+    "arg-type",
+    "misc",
+    "type-arg",
+]

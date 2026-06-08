@@ -1,0 +1,7 @@
+.env
+.venv
+__pycache__
+.idea
+allowed_users.json
+hf_cache
+voice_files

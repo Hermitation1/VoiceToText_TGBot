@@ -1,0 +1,32 @@
+services:
+  bot:
+    build: .
+    healthcheck:
+      test: [ "CMD-SHELL", "pgrep -f bot.py || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    env_file:
+      - .env
+
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
+
+    volumes:
+      - type: tmpfs
+        target: /tgbot/voice_files
+        tmpfs:
+          size: 1000000000
+
+      - ./allowed_users.json:/tgbot/allowed_users.json
+      - ./hf_cache:/root/.cache/huggingface/hub
