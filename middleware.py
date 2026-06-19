@@ -26,33 +26,45 @@ class UserAccess(BaseMiddleware):
 
 class ProcessingMiddleware(BaseMiddleware):
     def __init__(self):
-        self._queues: dict[int, asyncio.Queue[tuple]] = {}  # user_id: messages_queue
+        self._queues: dict[int, asyncio.PriorityQueue[tuple]] = (
+            {}
+        )  # user_id: messages_queue
+        self._lock = asyncio.Lock()
+        self._position: dict[int, int] = {}
 
     async def __call__(self, handler, event: Message, data):
         user_id = event.from_user.id
-
-        if user_id not in self._queues:
-            self._queues[user_id] = asyncio.Queue(maxsize=10)
-            self._queues[user_id].put_nowait((handler, event, data))
-            asyncio.create_task(self._process_queue(user_id=user_id))
-            return None
-        else:
-            self._queues[user_id].put_nowait((handler, event, data))
-            await bot.send_message(
-                user_id,
-                f"В очереди ({self._queues[user_id].qsize()})\n"
-                f"In queue ({self._queues[user_id].qsize()})",
-            )
-            return None
+        async with self._lock:
+            if user_id not in self._queues:
+                self._position[user_id] = 0
+                self._queues[user_id] = asyncio.PriorityQueue(maxsize=10)
+                self._queues[user_id].put_nowait(
+                    (event.message_id, handler, event, data)
+                )
+                asyncio.create_task(self._process_queue(user_id=user_id))
+                return None
+            else:
+                self._position[user_id] += 1
+                position = self._position[user_id]
+                self._queues[user_id].put_nowait(
+                    (event.message_id, handler, event, data)
+                )
+                await bot.send_message(
+                    user_id,
+                    f"В очереди ({position})\n" f"In queue ({position})",
+                )
+                return None
 
     async def _process_queue(self, user_id):
         while not self._queues[user_id].empty():
-            handler, event, data = await self._queues[user_id].get()
+            msg_id, handler, event, data = await self._queues[user_id].get()
             try:
                 await handler(event, data)
             except Exception as e:
                 logger.exception(f"Queue worker error for user {user_id}\nError: {e}")
             finally:
+                self._position[user_id] -= 1
                 self._queues[user_id].task_done()
 
         del self._queues[user_id]
+        del self._position[user_id]
