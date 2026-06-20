@@ -116,7 +116,7 @@ async def delete_user(callback: CallbackQuery):
     del allowed_users[user_id]
     save_users(allowed_users)
     await callback.answer(f"Пользователь {username} удален! / User {username} deleted!")
-    await callback.message.edit_reply_markup()
+    await callback.message.edit_reply_markup(reply_markup=None)
 
 
 async def handle_audio_or_video_file(

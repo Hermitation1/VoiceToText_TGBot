@@ -1,22 +1,12 @@
 import asyncio
-from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from aiogram import Bot
-from aiogram.types import Chat, Message, User
+from aiogram.types import Message
 
 from middleware import ProcessingMiddleware, UserAccess
-
-
-def _make_event(message_id=1, text: str | None = None) -> Message:
-    return Message(
-        message_id=message_id,
-        from_user=User(id=123456789, is_bot=False, first_name="Alice"),
-        chat=Chat(id=123456789, type="private"),
-        date=datetime.now(),
-        text=text,
-    )
+from tests.conftest import make_event
 
 
 class TestUserAccess:
@@ -24,7 +14,7 @@ class TestUserAccess:
     async def test_allows_start_command(self):
         handler = AsyncMock()
         middleware = UserAccess()
-        event = _make_event(text="/start")
+        event = make_event(text="/start")
 
         await middleware(handler, event, {})
 
@@ -34,7 +24,7 @@ class TestUserAccess:
     async def test_allows_help_command(self):
         handler = AsyncMock()
         middleware = UserAccess()
-        event = _make_event(text="/help")
+        event = make_event(text="/help")
 
         await middleware(handler, event, {})
 
@@ -45,7 +35,7 @@ class TestUserAccess:
         monkeypatch.setattr("middleware.allowed_users", {"123456789": "alice"})
         handler = AsyncMock()
         middleware = UserAccess()
-        event = _make_event()
+        event = make_event()
 
         await middleware(handler, event, {})
 
@@ -57,7 +47,7 @@ class TestUserAccess:
         monkeypatch.setattr("middleware.allowed_users", {})
         handler = AsyncMock()
         middleware = UserAccess()
-        event = _make_event()
+        event = make_event()
 
         await middleware(handler, event, {})
 
@@ -71,7 +61,7 @@ class TestProcessingMiddleware:
     async def test_first_file_start_processing(self, mock_send_message):
         handler = AsyncMock()
         middleware = ProcessingMiddleware()
-        event = _make_event()
+        event = make_event()
 
         await middleware(handler, event, {})
         await asyncio.sleep(0)
@@ -85,7 +75,7 @@ class TestProcessingMiddleware:
     async def test_second_file_in_queue(self, mock_send_message):
         handler = AsyncMock()
         middleware = ProcessingMiddleware()
-        event = _make_event()
+        event = make_event()
         user_id = event.from_user.id
         middleware._queues[user_id] = asyncio.PriorityQueue()
         middleware._position[user_id] = 0
@@ -102,8 +92,8 @@ class TestProcessingMiddleware:
     async def test_files_processing_by_id_and_after_user_removed_from_queue(self):
         handler = AsyncMock()
         middleware = ProcessingMiddleware()
-        event_1 = _make_event()
-        event_2 = _make_event(message_id=2)
+        event_1 = make_event()
+        event_2 = make_event(message_id=2)
         user_id = event_1.from_user.id
         middleware._queues[user_id] = asyncio.PriorityQueue()
         middleware._position[user_id] = 0
