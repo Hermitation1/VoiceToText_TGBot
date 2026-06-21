@@ -24,9 +24,9 @@ services:
 
     volumes:
       - type: tmpfs
-        target: /tgbot/voice_files
+        target: /home/botuser/tgbot/voice_files
         tmpfs:
           size: 1000000000
 
-      - ./allowed_users.json:/tgbot/allowed_users.json
-      - ./hf_cache:/root/.cache/huggingface/hub
+      - ./allowed_users.json:/home/botuser/tgbot/allowed_users.json
+      - ./hf_cache:/home/botuser/.cache/huggingface/hub
