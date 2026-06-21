@@ -9,6 +9,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      BOT_TOKEN: ci_test_token
+      OWNER_ID: "123456789"
+      PROXY_URL: ""
     steps:
       - uses: actions/checkout@v4
 
