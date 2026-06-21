@@ -10,7 +10,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      BOT_TOKEN: ci_test_token
+      BOT_TOKEN: "123456789:ABCdefGhIJKlmNOpqRsTUvWXyz"
       OWNER_ID: "123456789"
     steps:
       - uses: actions/checkout@v4
