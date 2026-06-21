@@ -12,20 +12,18 @@ A Telegram bot that transcribes voice messages, audio, video, and video notes in
 - Транскрибирует в текст в реальном времени
 - Очередь сообщений — несколько файлов обрабатываются по порядку
 - Система доступа — только одобренные пользователи
-- Поддержка групп
-- Русский и английский интерфейс
+
 - Accepts voice messages, audio, video, and video notes
 - Real-time transcription
 - Message queue — multiple files processed in order
 - Access control — approved users only
-- Group chat support
-- Bilingual UI (Russian / English)
+
 
 ## Стек / Stack
 
 - Python 3.14
 - aiogram 3.x
-- faster-whisper (large-v3-turbo, CUDA)
+- faster-whisper (large-v3-turbo, CUDA — можно переключить на CPU, см. `core.py`)
 - ffmpeg
 - pydantic-settings
 - uv (package manager)
@@ -46,6 +44,29 @@ uv sync
 cp .env.example .env
 # Заполнить токены / Fill in tokens
 ```
+### Windows
+
+При локальном запуске на Windows faster-whisper может не найти
+CUDA-библиотеки. Добавьте в `PATH`:
+
+```
+.venv\Lib\site-packages\nvidia\cublas\bin
+.venv\Lib\site-packages\nvidia\cudnn\bin
+.venv\Lib\site-packages\nvidia\cuda_runtime\bin
+```
+
+Или пропишите пути к локальной установке CUDA Toolkit и cuDNN.
+
+When running locally on Windows, faster-whisper may fail to locate
+CUDA libraries. Add to `PATH`:
+
+```
+.venv\Lib\site-packages\nvidia\cublas\bin
+.venv\Lib\site-packages\nvidia\cudnn\bin
+.venv\Lib\site-packages\nvidia\cuda_runtime\bin
+```
+
+Or set paths to your local CUDA Toolkit and cuDNN installation.
 
 ### Docker
 
@@ -53,8 +74,14 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Требуется NVIDIA GPU с поддержкой CUDA.
-Requires NVIDIA GPU with CUDA support.
+Для полной и быстрой работы требуется NVIDIA GPU с CUDA.
+Можно запустить на CPU (медленнее), изменив модель в `core.py`:
+`WhisperModel("small", device="cpu", compute_type="int8")`
+
+For best performance, NVIDIA GPU with CUDA is required.
+Can run on CPU (slower) by switching the model in `core.py`:
+`WhisperModel("small", device="cpu", compute_type="int8")`
+
 
 ## Конфигурация / Configuration
 
@@ -63,7 +90,7 @@ Requires NVIDIA GPU with CUDA support.
 ```env
 BOT_TOKEN=your_telegram_bot_token
 OWNER_ID=your_telegram_user_id
-PROXY_URL=http://proxy:port  # или / or пропустить / skip
+PROXY_URL=http://proxy:port  # опционально / optional
 HF_TOKEN=hf_your_huggingface_token
 ```
 
@@ -81,6 +108,7 @@ HF_TOKEN=hf_your_huggingface_token
 3. Отправить голосовое, аудио, видео или видео-кружок / Send voice, audio, video or video note
 4. Бот транскрибирует в текст / Bot transcribes to text
 
+
 ### Команды / Commands
 
 | Команда / Command | Кто / Who | Описание / Description |
@@ -88,6 +116,9 @@ HF_TOKEN=hf_your_huggingface_token
 | `/start` | Все / All | Запросить доступ / Request access |
 | `/help` | Все / All | Справка / Help |
 | `/get_users` | Владелец / Owner | Список пользователей / User list |
+
+Удалить пользователя можно кнопкой в списке `/get_users`.
+Remove a user with the button in the `/get_users` list.
 
 ## Структура проекта / Project Structure
 
@@ -99,23 +130,12 @@ HF_TOKEN=hf_your_huggingface_token
 ├── messages.py         # Тексты сообщений / Message texts (RU/EN)
 ├── middleware.py        # UserAccess + ProcessingMiddleware + очередь / queue
 ├── services.py         # Бизнес-логика / Business logic
-├── pyproject.toml      # Зависимости и конфиг линтеров / Dependencies & linter config
+├── pyproject.toml      # Зависимости / Dependencies
 ├── Dockerfile
 ├── docker-compose.yml
 ├── allowed_users.json  # Данные пользователей / User data
 ├── hf_cache/           # Кеш моделей / Model cache
 └── voice_files/        # Временные файлы / Temp files (tmpfs в Docker)
-```
-
-## Разработка / Development
-
-```bash
-# Линтинг и типизация / Lint & type check
-ruff check .
-mypy .
-
-# Форматирование / Format
-ruff format .
 ```
 
 ## Лицензия / License
