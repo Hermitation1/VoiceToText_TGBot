@@ -8,10 +8,11 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-session = AiohttpSession(proxy=settings.proxy_url)  # IF YOU USE PROXY
-
-bot = Bot(token=settings.bot_token, session=session)
-# bot = Bot(token=settings.bot_token) # without proxy
+if settings.proxy_url:
+    session = AiohttpSession(proxy=settings.proxy_url)
+    bot = Bot(token=settings.bot_token, session=session)
+else:
+    bot = Bot(token=settings.bot_token)
 router = Router()
 dp = Dispatcher()
 dp.include_router(router)
