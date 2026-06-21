@@ -8,6 +8,7 @@ from aiogram.types import CallbackQuery, Message
 
 from services import (
     delete_user,
+    download_with_retry,
     load_users,
     request_access,
     save_users,
@@ -146,3 +147,38 @@ class TestDeleteUser:
             "Пользователь @alice удален! / User @alice deleted!"
         )
         mock_edit.assert_called_once_with(reply_markup=None)
+
+
+class TestDownload:
+    @patch.object(Bot, "download_file", new_callable=AsyncMock)
+    @pytest.mark.asyncio
+    async def test_succeeds_first_attempt(self, mock_download):
+        mock_download.return_value = b"ok"
+
+        result = await download_with_retry("file.ogg")
+
+        assert result == b"ok"
+        mock_download.assert_called_once_with("file.ogg")
+
+    @patch.object(Bot, "download_file", new_callable=AsyncMock)
+    @pytest.mark.asyncio
+    async def test_succeeds_after_retries(self, mock_download):
+        mock_download.side_effect = [Exception("fail1"), Exception("fail2"), b"ok"]
+
+        result = await download_with_retry("file.ogg")
+
+        assert result == b"ok"
+        assert mock_download.call_count == 3
+
+    @patch.object(Bot, "download_file", new_callable=AsyncMock)
+    @pytest.mark.asyncio
+    async def test_fails_after_all_retries(self, mock_download):
+        mock_download.side_effect = [
+            Exception("fail1"),
+            Exception("fail2"),
+            Exception("fail3"),
+        ]
+        with pytest.raises(Exception, match="fail3"):
+            await download_with_retry("file.ogg")
+
+        assert mock_download.call_count == 3
