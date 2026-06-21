@@ -1,3 +1,6 @@
+.coverage
+.pytest_cache
+htmlcov
 .venv
 .env
 .git
