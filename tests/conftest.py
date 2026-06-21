@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import pytest
 from aiogram.types import CallbackQuery, Chat, Message, User
+from faster_whisper import WhisperModel
 
 
 def make_event(message_id=1, text: str | None = None) -> Message:
@@ -24,3 +26,8 @@ def make_callback(data: str) -> CallbackQuery:
         chat_instance="x",
         data=data,
     )
+
+
+@pytest.fixture(scope="session")
+def tiny_model():
+    return WhisperModel("tiny", device="cpu", compute_type="int8")
