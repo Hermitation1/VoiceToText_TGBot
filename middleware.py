@@ -26,9 +26,9 @@ class UserAccess(BaseMiddleware):
 
 class ProcessingMiddleware(BaseMiddleware):
     def __init__(self):
-        self._queues: dict[int, asyncio.PriorityQueue[tuple]] = (
-            {}
-        )  # user_id: messages_queue
+        self._queues: dict[
+            int, asyncio.PriorityQueue[tuple]
+        ] = {}  # user_id: messages_queue
         self._lock = asyncio.Lock()
         self._position: dict[int, int] = {}
 
@@ -51,7 +51,7 @@ class ProcessingMiddleware(BaseMiddleware):
                 )
                 await bot.send_message(
                     user_id,
-                    f"В очереди ({position})\n" f"In queue ({position})",
+                    f"В очереди ({position})\nIn queue ({position})",
                 )
                 return None
 

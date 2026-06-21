@@ -8,7 +8,6 @@ from tests.conftest import make_event
 
 
 class TestHandleAudioOrVideo:
-
     @patch.object(Message, "edit_text", new_callable=AsyncMock)
     @pytest.mark.asyncio
     async def test_transcribe_audio(self, mock_edit, tiny_model, monkeypatch):
